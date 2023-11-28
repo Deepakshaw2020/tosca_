@@ -11,7 +11,7 @@ on:
         description: 'List of email to send mail update to'
         required: true
         type: string
-        default: altab_h@pursuitsoftware.biz
+        default: deepak_s@pursuitsoftware.biz
 jobs:
   Tosca-Test:
     runs-on: [self-hosted, windows, x64, Tosca-Github-Runner]
