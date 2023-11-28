@@ -1,0 +1,49 @@
+name: GitHub Actions Tosca Test Integration
+run-name: ${{ github.actor }} is testing out GitHub Actions
+on:
+  workflow_dispatch:
+    inputs:
+      testEvents:
+        description: 'Test Events'
+        required: true
+        type: string
+      emailLists:
+        description: 'List of email to send mail update to'
+        required: true
+        type: string
+        default: altab_h@pursuitsoftware.biz
+jobs:
+  Tosca-Test:
+    runs-on: [self-hosted, windows, x64, Tosca-Github-Runner]
+    steps:
+      - name: PowerShell script
+        shell: powershell
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+          C:\CI_script\tosca_execution_client.ps1 -toscaServerUrl "http://52.172.226.162:81" -projectName "Tosca_DI_Team" -events '[${{inputs.testEvents}}]' -resultsFileName testresult.xml -resultsFolderPath "C:/CI_script/"
+        
+      - name: Test Summary
+        id: test_summary
+        uses: test-summary/action@v2
+        if: always()
+        with:
+          paths: "C:/CI_script/test*.xml"
+          show: "all"
+        
+
+      - name: Send email
+        uses: dawidd6/action-send-mail@v3.9.0
+        if: always()
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: altablearn@gmail.com
+          password: fyturmabxagluiav
+          to: ${{inputs.emailLists}}
+          from: altablearn@gmail.com
+          subject: GIthub Actions - Tosca Test Summary Update
+          body: |
+            The Number of Tests Passed: ${{steps.test_summary.outputs.passed}}
+            The Number of Tests Failed: ${{steps.test_summary.outputs.failed}}
+            The Total number of Tests Performed: ${{steps.test_summary.outputs.total}}
